@@ -211,3 +211,5 @@ artifacts/
 .idea/.idea.BookSomeSpace/.idea/markdown-navigator-enh.xml
 .idea/.idea.BookSomeSpace/.idea/$CACHE_FILE$
 .idea/.idea.BookSomeSpace/.idea/$PROJECT_FILE$
+
+/BookSomeSpace/Data/BookSomeSpace/Profiles/

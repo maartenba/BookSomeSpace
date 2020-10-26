@@ -26,17 +26,17 @@ namespace BookSomeSpace
         public void ConfigureServices(IServiceCollection services)
         {
             // Local storage
-            services.AddSingleton<LocalStorage>(provider =>
+            services.AddSingleton<SettingsStorage>(provider =>
             {
                 if (Environment.GetEnvironmentVariable("REGION_NAME") != null 
                     && Environment.GetEnvironmentVariable("HOME") != null)
                 {
                     // Azure
-                    return new LocalStorage( Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "Data", "BookSomeSpace"));
+                    return new SettingsStorage(Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "Data", "BookSomeSpace", "Profiles"));
                 }
                 
                 // Local
-                return new LocalStorage(Path.GetFullPath("."));
+                return new SettingsStorage(Path.Combine(Path.GetFullPath("."), "Data", "BookSomeSpace", "Profiles"));
             });
             
             // Razor pages

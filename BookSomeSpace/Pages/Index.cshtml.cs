@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using SpaceDotNet.Client;
@@ -18,27 +17,25 @@ namespace BookSomeSpace.Pages
 {
     public class IndexModel : PageModel
     {
-        private const int MinHourUtc = 7;
-        private const int MaxHourUtc = 15;
         private const string MeetingTitlePrefix = "[BookSomeSpace] Meeting with ";
         
         private readonly TeamDirectoryClient _teamDirectoryClient;
         private readonly AbsenceClient _absenceClient;
         private readonly CalendarClient _calendarClient;
-        private readonly LocalStorage _localStorage;
+        private readonly SettingsStorage _settingsStorage;
         private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(
             TeamDirectoryClient teamDirectoryClient, 
             AbsenceClient absenceClient, 
             CalendarClient calendarClient,
-            LocalStorage localStorage,
+            SettingsStorage settingsStorage,
             ILogger<IndexModel> logger)
         {
             _teamDirectoryClient = teamDirectoryClient;
             _absenceClient = absenceClient;
             _calendarClient = calendarClient;
-            _localStorage = localStorage;
+            _settingsStorage = settingsStorage;
             _logger = logger;
         }
 
@@ -57,10 +54,7 @@ namespace BookSomeSpace.Pages
 
         public async Task<IActionResult> OnGet(DateTime? startDate, string? username)
         {
-            if (string.IsNullOrEmpty(username) || !System.IO.File.Exists(Path.Combine(_localStorage.RootPath, username.ToLowerInvariant())))
-            {
-                return NotFound();
-            }
+            if (string.IsNullOrEmpty(username)) return NotFound();
             
             TDMemberProfile profile;
             try
@@ -71,6 +65,9 @@ namespace BookSomeSpace.Pages
             {
                 return NotFound();
             }
+            
+            var profileSettings = await _settingsStorage.Retrieve(profile.Username);
+            if (!profileSettings.Enabled) return NotFound();
             
             DisplayName = $"{profile.Name.FirstName} {profile.Name.LastName}";
             
@@ -116,18 +113,18 @@ namespace BookSomeSpace.Pages
             var currentDateTime = startingAfter;
             while (currentDateTime < endingBefore)
             {
-                if (currentDateTime.Hour < MinHourUtc)
-                    currentDateTime = new DateTime(currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, MinHourUtc, 0, 0);
+                if (currentDateTime.Hour < profileSettings.MinHourUtc)
+                    currentDateTime = new DateTime(currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, profileSettings.MinHourUtc, 0, 0);
                 
                 Availability[currentDateTime] = 
                     !unavailabilities.Any(it => it.Start <= currentDateTime && it.End >= currentDateTime) &&
                     currentDateTime > DateTime.UtcNow;
                 currentDateTime = currentDateTime.AddMinutes(30);
 
-                if (currentDateTime.Hour >= MaxHourUtc)
+                if (currentDateTime.Hour >= profileSettings.MaxHourUtc)
                 {
                     currentDateTime = currentDateTime.AddDays(1);
-                    currentDateTime = new DateTime(currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, MinHourUtc, 0, 0);
+                    currentDateTime = new DateTime(currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, profileSettings.MinHourUtc, 0, 0);
                 }
             }
             
@@ -136,10 +133,7 @@ namespace BookSomeSpace.Pages
 
         public async Task<IActionResult> OnPost(DateTime? startDate, string? username)
         {
-            if (string.IsNullOrEmpty(username) || !System.IO.File.Exists(Path.Combine(_localStorage.RootPath, username.ToLowerInvariant())))
-            {
-                return NotFound();
-            }
+            if (string.IsNullOrEmpty(username)) return NotFound();
             
             if (ModelState.IsValid)
             {
@@ -152,6 +146,9 @@ namespace BookSomeSpace.Pages
                 {
                     return NotFound();
                 }
+                
+                var profileSettings = await _settingsStorage.Retrieve(profile.Username);
+                if (!profileSettings.Enabled) return NotFound();
 
                 var whenAsUtc = When.ToUniversalTime();
                 
