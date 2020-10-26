@@ -1,0 +1,20 @@
+﻿@page
+@model EnableModel
+
+@{
+    ViewData["Title"] = "Enable BookSomeSpace for your account";
+}
+<div class="text-center">
+    <h1 class="display-4">Enable BookSomeSpace for your account</h1>
+    
+    <div class="messages">
+        <p class="alert alert-success">
+            BookSomeSpace has been enabled for your account.
+        </p>
+    </div>
+    
+    <p>
+        You can use the following link to let people book entries in your agenda:<br/>
+        <pre>@Html.Raw(Model.BookUrl)</pre>
+    </p>
+</div>

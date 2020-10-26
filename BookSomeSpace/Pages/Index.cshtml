@@ -1,0 +1,137 @@
+﻿@page "{username?}"
+@model IndexModel
+@{
+    ViewData["Title"] = "Book time with " + Model.DisplayName;
+}
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            $('time[datetime]').each(function () {
+                var date = new Date(Date.parse($(this).attr('datetime')));
+                $(this).text(date.toLocaleTimeString(navigator.language));
+            });
+            
+            $('#bookingModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var when = button.data('when');   
+                var modal = $(this);
+                
+                var date = new Date(Date.parse(when));
+                modal.find('.modal-body #whenDisplay').text(date.toLocaleString(navigator.language));
+                modal.find('.modal-body #When').val(when);
+            });
+        });
+    </script>
+        
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+
+<div class="text-center">
+    <h1 class="display-4">Book time with @Model.DisplayName</h1>
+    
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="messages">
+            <p class="alert alert-success">
+                @Model.SuccessMessage
+            </p>
+        </div>
+    }
+    
+    <div class="shadow p-4">
+        <div class="row border-bottom pb-4">
+            <div class="col-6 text-left">
+                @if (Model.PreviousWeek.AddDays(5) > DateTime.UtcNow)
+                {
+                    <a href="?startDate=@Model.PreviousWeek.ToString("yyyy-MM-dd")">&laquo; Previous week</a>
+                }
+            </div>
+            <div class="col-6 text-right"><a href="?startDate=@Model.NextWeek.ToString("yyyy-MM-dd")">Next week &raquo;</a></div>
+        </div>
+        
+        <div class="row border-bottom pt-4 pb-4 bg-light">
+            @foreach (var dayInfo in Model.Availability
+                .GroupBy(it => it.Key.DayOfWeek)
+                .Select(it => it.First().Key))
+            {
+                <div class="col">
+                    <small>@dayInfo.ToString("ddd")</small><br />
+                    <strong class="h1">@dayInfo.ToString("dd")</strong><br />
+                    <small>@dayInfo.ToString("MMM yyyy")</small>
+                </div>
+            }
+        </div>
+        
+        @foreach (var timeSlot in Model.Availability
+            .Where(it => it.Key.DayOfWeek == DayOfWeek.Monday)
+            .Select(it => it.Key))
+        {
+            <div class="row pt-4">
+                @foreach (var timeSlotOnDay in Model.Availability
+                    .GroupBy(it => it.Key.DayOfWeek)
+                    .SelectMany(it => it.ToList())
+                    .Where(it => it.Key.Hour == timeSlot.Hour && it.Key.Minute == timeSlot.Minute))
+                {
+                    <div class="col">
+                        @if (timeSlotOnDay.Value)
+                        {
+                            <button class="btn btn-success" data-toggle="modal" data-target="#bookingModal" data-when="@timeSlotOnDay.Key.ToString("u")">
+                                <time datetime="@timeSlotOnDay.Key.ToString("u")">
+                                    @timeSlotOnDay.Key.ToString("HH:mm tt zz")
+                                </time>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-dark" disabled>
+                                <time datetime="@timeSlotOnDay.Key.ToString("u")">
+                                    @timeSlotOnDay.Key.ToString("HH:mm tt zz")
+                                </time>
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalTitle">Book time with @Model.DisplayName</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label asp-for="When"></label>
+                        <input type="hidden" asp-for="When" />
+                        <time id="whenDisplay" class="form-control" disabled></time>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Name"></label>
+                        <input asp-for="Name" class="form-control"/>
+                        @Html.ValidationMessageFor(it => Model.Name)
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-control"/>
+                        @Html.ValidationMessageFor(it => Model.Email)
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Summary"></label>
+                        <textarea asp-for="Summary" class="form-control" rows="5"></textarea>
+                        @Html.ValidationMessageFor(it => Model.Summary)
+                    </div>
+                    <button type="submit" class="btn btn-primary">Book meeting</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

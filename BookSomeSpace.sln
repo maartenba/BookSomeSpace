@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookSomeSpace", "BookSomeSpace\BookSomeSpace.csproj", "{2EDDF162-04F8-46A0-BE21-478C88F369D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{E7EAFD6A-6875-485A-AA33-D3AAF7B25BF3}"
+ProjectSection(SolutionItems) = preProject
+	global.json = global.json
+	NuGet.config = NuGet.config
+	README.md = README.md
+EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2EDDF162-04F8-46A0-BE21-478C88F369D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EDDF162-04F8-46A0-BE21-478C88F369D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EDDF162-04F8-46A0-BE21-478C88F369D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EDDF162-04F8-46A0-BE21-478C88F369D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

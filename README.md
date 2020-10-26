@@ -1,31 +1,31 @@
-# evan/BookSomeSpace
+# BookSomeSpace
 
-Source code for the BookSomeSpace sample application
+BookSomeSpace helps you schedule meetings. It eliminates back and forth emails - people can book straight into your calendar!
 
-## Getting Started
+## Setting up for development
 
-Download links:
+You will need an application registered in Space.
+* [Create a new Server-side Web App](https://jetbrains.team/manage/applications)
+  * Callback URL: `https://localhost:5001/signin-space`
+* Copy the client id and client secret into `appsettings.json`
+  * Create a [user secrets file](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets):
+    * Windows - `%APPDATA%\Microsoft\UserSecrets\BookSomeSpace\secrets.json`
+    * Linux/macOS - `~/.microsoft/usersecrets/BookSomeSpace/secrets.json`
 
-SSH clone URL: ssh://git@git.jetbrains.team/evan/BookSomeSpace.git
-
-HTTPS clone URL: https://git.jetbrains.team/evan/BookSomeSpace.git
-
-
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-## Prerequisites
-
-What things you need to install the software and how to install them.
-
+Example `secrets.json`:
 ```
-Examples
+{
+  "Space": {
+    "ServerUrl": "https://jetbrains.team",
+    "ClientId": "{client-id}",
+    "ClientSecret": "{client-secret}"
+  }
+}
 ```
 
-## Deployment
+## Try it out!
 
-Add additional notes about how to deploy this on a production system.
+Once up-and-running, you can use the following URLs:
 
-## Resources
-
-Add links to external resources for this project, such as CI server, bug tracker, etc.
+* https://localhost:5001/Enable - Enables the calendar booking for your account
+* https://localhost:5001/Space.Username - Book in `Space.Username` calendar
