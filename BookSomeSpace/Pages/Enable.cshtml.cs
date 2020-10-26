@@ -49,7 +49,8 @@ namespace BookSomeSpace.Pages
                 Enabled = true,
                 Username = profile.Username,
                 MinHourUtc = 7,
-                MaxHourUtc = 15
+                MaxHourUtc = 15,
+                MinScheduleNoticeInHours = 1
             });
             
             BookUrl = Request.GetDisplayUrl().SubstringBefore("/enable", StringComparison.OrdinalIgnoreCase)

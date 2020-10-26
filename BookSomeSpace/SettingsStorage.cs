@@ -10,8 +10,9 @@ namespace BookSomeSpace
     {
         public bool Enabled { get; set; }
         public string Username { get; set; }
-        public int MinHourUtc { get; set; }
-        public int MaxHourUtc { get; set; }
+        public int MinHourUtc { get; set; } = 7;
+        public int MaxHourUtc { get; set; } = 15;
+        public int MinScheduleNoticeInHours { get; set; } = 1;
     }
     
     public class SettingsStorage

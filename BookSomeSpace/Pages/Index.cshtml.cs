@@ -118,7 +118,7 @@ namespace BookSomeSpace.Pages
                 
                 Availability[currentDateTime] = 
                     !unavailabilities.Any(it => it.Start <= currentDateTime && it.End >= currentDateTime) &&
-                    currentDateTime > DateTime.UtcNow;
+                    currentDateTime > DateTime.UtcNow.AddHours(profileSettings.MinScheduleNoticeInHours);
                 currentDateTime = currentDateTime.AddMinutes(30);
 
                 if (currentDateTime.Hour >= profileSettings.MaxHourUtc)
