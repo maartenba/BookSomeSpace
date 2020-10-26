@@ -82,8 +82,12 @@ namespace BookSomeSpace.Pages
             NextWeek = startingAfter.AddDays(7);
             PreviousWeek = startingAfter.AddDays(-7);
 
+            var unavailabilities = new List<Unavailability>();
+
             var absences = await _absenceClient.GetAllAbsencesAsyncEnumerable(AbsenceListMode.All,
-                members: new List<string> {profile.Id}, since: startingAfter, till: endingBefore).ToListAsync();
+                members: new List<string> { profile.Id }, since: startingAfter, till: endingBefore).ToListAsync();
+            
+            unavailabilities.AddRange(absences.Select(it => new Unavailability(it.Id, it.Since, it.Till)));
             
             var meetings = await _calendarClient.Meetings.GetAllMeetingsAsyncEnumerable(profiles: new List<string> { profile.Id }, includePrivate: true, includeArchived: false, includeMeetingInstances: true, 
                 startingAfter: startingAfter,
@@ -93,11 +97,22 @@ namespace BookSomeSpace.Pages
                     .WithOccurrenceRule(occurrence => occurrence
                         .WithStart()
                         .WithEnd()
+                        .WithRecurrenceRule(recurrence => recurrence
+                            .WithAllFieldsWildcard())
                         .WithIsAllDay()
                         .WithTimezone(timezone => timezone.WithAllFieldsWildcard())))
                 .OrderBy(it => it.OccurrenceRule.Start)
                 .ToListAsync();
 
+            unavailabilities.AddRange(meetings.Select(it => new Unavailability(it.Id, it.OccurrenceRule.Start, it.OccurrenceRule.End)));
+
+            var recurringMeetings = meetings.Where(it => it.OccurrenceRule.RecurrenceRule != null).ToList();
+            foreach (var recurringMeeting in recurringMeetings)
+            {
+                var meetingOccurrences = await _calendarClient.Meetings.GetMeetingOccurrencesForPeriodAsync(recurringMeeting.Id, startingAfter, endingBefore);
+                unavailabilities.AddRange(meetingOccurrences.Select(it => new Unavailability(recurringMeeting.Id, it.Start, it.End)));
+            }
+            
             var currentDateTime = startingAfter;
             while (currentDateTime < endingBefore)
             {
@@ -105,8 +120,7 @@ namespace BookSomeSpace.Pages
                     currentDateTime = new DateTime(currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, MinHourUtc, 0, 0);
                 
                 Availability[currentDateTime] = 
-                    !meetings.Any(it => it.OccurrenceRule.Start <= currentDateTime && it.OccurrenceRule.End >= currentDateTime) &&
-                    !absences.Any(it => it.Since <= currentDateTime && it.Till >= currentDateTime) &&
+                    !unavailabilities.Any(it => it.Start <= currentDateTime && it.End >= currentDateTime) &&
                     currentDateTime > DateTime.UtcNow;
                 currentDateTime = currentDateTime.AddMinutes(30);
 
