@@ -7,7 +7,6 @@ ProjectSection(SolutionItems) = preProject
 	global.json = global.json
 	NuGet.config = NuGet.config
 	.space.kts = .space.kts
-	Dockerfile = Dockerfile
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{9EFBEB1B-BE8D-404B-9791-67A5C8AAF421}"

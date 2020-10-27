@@ -18,12 +18,3 @@ job("Run build") {
         }
     }
 }
-
-job("Create container") {
-    docker {
-        build {
-            file = "./Dockerfile"
-        }
-        push("registry.jetbrains.team/p/evan/booksomespace/webapp")
-    }
-}
