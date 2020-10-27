@@ -28,6 +28,9 @@ namespace BookSomeSpace
             }
         }
         
+        public bool HasSettings(string username) =>
+                File.Exists(Path.Combine(_rootPath, username.ToLowerInvariant()));
+
         public async Task<BookSomeSpaceSettings> Retrieve(string username) 
         {
             if (!File.Exists(Path.Combine(_rootPath, username.ToLowerInvariant())))
@@ -43,10 +46,12 @@ namespace BookSomeSpace
                 await File.ReadAllTextAsync(Path.Combine(_rootPath, username.ToLowerInvariant())));
         }
         
-        public async Task Store(string username, BookSomeSpaceSettings settings) 
+        public async Task<BookSomeSpaceSettings> Store(string username, BookSomeSpaceSettings settings) 
         {
             await File.WriteAllTextAsync(Path.Combine(_rootPath, username.ToLowerInvariant()),
                 JsonSerializer.Serialize(settings));
+
+            return settings;
         }
     }
 }

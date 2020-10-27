@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -45,10 +46,10 @@ namespace BookSomeSpace.Pages
         public DateTime NextWeek { get; set; }
         public DateTime PreviousWeek { get; set; }
 
-        [BindProperty, Required] public DateTime When { get; set; }
-        [BindProperty, Required] public string Name { get; set; }
-        [BindProperty, Required, DataType(DataType.EmailAddress)] public string Email { get; set; }
-        [BindProperty, Required] public string Summary { get; set; }
+        [BindProperty, Required, DisplayName("When")] public DateTime When { get; set; }
+        [BindProperty, Required, DisplayName("Name")] public string Name { get; set; }
+        [BindProperty, Required, DataType(DataType.EmailAddress), DisplayName("E-mail address")] public string Email { get; set; }
+        [BindProperty, Required, DisplayName("Summary")] public string Summary { get; set; }
         
         [TempData] public string? SuccessMessage { get; set; }
 
@@ -181,7 +182,7 @@ namespace BookSomeSpace.Pages
                 
                 SuccessMessage = "Thank you, a meeting has been booked!";
                 
-                return RedirectToPage(nameof(Index), new { startDate, username });
+                return RedirectToPage("Index", new { startDate, username });
             }
             
             return await OnGet(startDate, username);

@@ -2,19 +2,65 @@
 @model EnableModel
 
 @{
-    ViewData["Title"] = "Enable BookSomeSpace for your account";
+    ViewData["Title"] = "Your BookSomeSpace settings";
 }
+
+@section Scripts
+{
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+
 <div class="text-center">
-    <h1 class="display-4">Enable BookSomeSpace for your account</h1>
-    
-    <div class="messages">
-        <p class="alert alert-success">
-            BookSomeSpace has been enabled for your account.
-        </p>
+    <h1 class="display-4">Your BookSomeSpace settings</h1>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-8">
+            @if (Model.Enabled)
+            {
+                <div class="messages">
+                    <p class="alert alert-success">
+                        BookSomeSpace is enabled for your account.
+                    </p>
+                </div>
+        
+                <div class="shadow p-4">
+                    You can use the following link to let people book entries in your agenda:<br/>
+                    <pre class="border p-2 mt-2">@Html.Raw(Model.BookUrl)</pre>
+                </div>
+            }
+            else
+            {
+                <p class="alert alert-warning">
+                    BookSomeSpace is not enabled for your account.
+                </p>
+            }
+        </div>
+        
+        <div class="col-4">
+            <form method="post">
+                <div class="form-group">
+                    <input type="checkbox" asp-for="Enabled">
+                    <label asp-for="Enabled"></label>
+                </div>
+                <div class="form-group">
+                    <label asp-for="MinHourUtc"></label>
+                    <select asp-for="MinHourUtc" class="form-control" asp-items="Model.HoursOfDay"></select>
+                    @Html.ValidationMessageFor(it => Model.MinHourUtc)
+                </div>
+                <div class="form-group">
+                    <label asp-for="MaxHourUtc"></label>
+                    <select asp-for="MaxHourUtc" class="form-control" asp-items="Model.HoursOfDay"></select>
+                    @Html.ValidationMessageFor(it => Model.MaxHourUtc)
+                </div>
+                <div class="form-group">
+                    <label asp-for="MinScheduleNoticeInHours"></label>
+                    <select asp-for="MinScheduleNoticeInHours" class="form-control" asp-items="Model.HoursOfDay"></select>
+                    @Html.ValidationMessageFor(it => Model.MinScheduleNoticeInHours)
+                </div>
+                <button type="submit" class="btn btn-primary">Update settings</button>
+            </form>
+        </div>
     </div>
-    
-    <p>
-        You can use the following link to let people book entries in your agenda:<br/>
-        <pre>@Html.Raw(Model.BookUrl)</pre>
-    </p>
 </div>

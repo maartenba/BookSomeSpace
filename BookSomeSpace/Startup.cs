@@ -26,7 +26,7 @@ namespace BookSomeSpace
         public void ConfigureServices(IServiceCollection services)
         {
             // Local storage
-            services.AddSingleton<SettingsStorage>(provider =>
+            services.AddSingleton(provider =>
             {
                 if (Environment.GetEnvironmentVariable("REGION_NAME") != null 
                     && Environment.GetEnvironmentVariable("HOME") != null)

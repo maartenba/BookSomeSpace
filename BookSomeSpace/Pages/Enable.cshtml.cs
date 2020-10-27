@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using SpaceDotNet.Client;
 using SpaceDotNet.Common;
@@ -30,6 +35,16 @@ namespace BookSomeSpace.Pages
             _logger = logger;
         }
 
+        public readonly List<SelectListItem> HoursOfDay =
+            Enumerable.Range(0, 23)
+                .Select(it => new SelectListItem(it + ":00", it.ToString()))
+                .ToList();
+        
+        [BindProperty, DisplayName("Enable BookSomeSpace")] public bool Enabled { get; set; }
+        [BindProperty, Range(0, 23), DisplayName("Meetings can start at (UTC)")] public int MinHourUtc { get; set; }
+        [BindProperty, Range(0, 23), DisplayName("Meetings should end at (UTC)")] public int MaxHourUtc { get; set; }
+        [BindProperty, Range(0, 23), DisplayName("Hours to book beforehand")] public int MinScheduleNoticeInHours { get; set; }
+        
         [TempData] public string? BookUrl { get; set; }
         
         public async Task<IActionResult> OnGet()
@@ -43,20 +58,59 @@ namespace BookSomeSpace.Pages
             {
                 return NotFound();
             }
-
-            await _settingsStorage.Store(profile.Username, new BookSomeSpaceSettings
-            {
-                Enabled = true,
-                Username = profile.Username,
-                MinHourUtc = 7,
-                MaxHourUtc = 15,
-                MinScheduleNoticeInHours = 1
-            });
             
             BookUrl = Request.GetDisplayUrl().SubstringBefore("/enable", StringComparison.OrdinalIgnoreCase)
                       + Url.Page(nameof(Index), new { username = profile.Username });
 
+            // If no settings exist, enable booking with default values
+            if (!_settingsStorage.HasSettings(profile.Username))
+            {
+                await _settingsStorage.Store(profile.Username, new BookSomeSpaceSettings
+                {
+                    Enabled = true,
+                    Username = profile.Username,
+                    MinHourUtc = 7,
+                    MaxHourUtc = 15,
+                    MinScheduleNoticeInHours = 1
+                });
+            }
+
+            var settings = await _settingsStorage.Retrieve(profile.Username);
+            Enabled = settings.Enabled;
+            MinHourUtc = settings.MinHourUtc;
+            MaxHourUtc = settings.MaxHourUtc;
+            MinScheduleNoticeInHours = settings.MinScheduleNoticeInHours;
+
             return Page();
+        }
+
+        public async Task<IActionResult> OnPost()
+        {
+            TDMemberProfile profile;
+            try
+            {
+                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Me);
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                var settings = await _settingsStorage.Retrieve(profile.Username);
+                
+                settings.Enabled = Enabled;
+                settings.MinHourUtc = MinHourUtc;
+                settings.MaxHourUtc = MaxHourUtc;
+                settings.MinScheduleNoticeInHours = MinScheduleNoticeInHours;
+                
+                await _settingsStorage.Store(profile.Username, settings);
+                
+                return RedirectToPage("Enable");
+            }
+            
+            return await OnGet();
         }
     }
 }
