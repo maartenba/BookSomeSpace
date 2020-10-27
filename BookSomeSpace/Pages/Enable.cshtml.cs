@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using SpaceDotNet.AspNetCore.Authentication.Space;
 using SpaceDotNet.Client;
 using SpaceDotNet.Common;
 using SpaceDotNet.Common.Utilities;
@@ -52,7 +53,7 @@ namespace BookSomeSpace.Pages
             TDMemberProfile profile;
             try
             {
-                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Me);
+                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Id(User.Identity.GetClaimValue(SpaceClaimTypes.UserId)));
             }
             catch (NotFoundException)
             {
@@ -89,7 +90,7 @@ namespace BookSomeSpace.Pages
             TDMemberProfile profile;
             try
             {
-                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Me);
+                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Id(User.Identity.GetClaimValue(SpaceClaimTypes.UserId)));
             }
             catch (NotFoundException)
             {

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SpaceDotNet.AspNetCore.Authentication.Space;
-using SpaceDotNet.AspNetCore.Authentication.Space.Experimental.TokenManagement;
 using SpaceDotNet.Common;
 
 namespace BookSomeSpace
@@ -55,15 +54,15 @@ namespace BookSomeSpace
                     options.DefaultChallengeScheme = SpaceDefaults.AuthenticationScheme;
                 })
                 .AddCookie()
-                .AddSpace(options => Configuration.Bind("Space", options))
-                .AddSpaceTokenManagement(provider =>
-                    new ClientCredentialsConnection(
-                        new Uri(Configuration["Space:ServerUrl"]),
-                        Configuration["Space:ClientId"],
-                        Configuration["Space:ClientSecret"],
-                        provider.GetService<IHttpClientFactory>().CreateClient()));
+                .AddSpace(options => Configuration.Bind("Space", options));
             
             // Space client API
+            services.AddSpaceConnection(provider =>
+                new ClientCredentialsConnection(
+                    new Uri(Configuration["Space:ServerUrl"]),
+                    Configuration["Space:ClientId"],
+                    Configuration["Space:ClientSecret"],
+                    provider.GetService<IHttpClientFactory>().CreateClient()));
             services.AddSpaceClientApi();
         }
 
