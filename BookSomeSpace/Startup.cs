@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SpaceDotNet.AspNetCore.Authentication.Space;
 using SpaceDotNet.AspNetCore.Authentication.Space.Experimental.TokenManagement;
 using SpaceDotNet.Common;
@@ -28,15 +29,17 @@ namespace BookSomeSpace
             // Local storage
             services.AddSingleton(provider =>
             {
+                var logger = provider.GetService<ILogger<SettingsStorage>>();
+                
                 if (Environment.GetEnvironmentVariable("REGION_NAME") != null 
                     && Environment.GetEnvironmentVariable("HOME") != null)
                 {
                     // Azure
-                    return new SettingsStorage(Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "Data", "BookSomeSpace", "Profiles"));
+                    return new SettingsStorage(Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "Data", "BookSomeSpace", "Profiles"), logger);
                 }
                 
                 // Local
-                return new SettingsStorage(Path.Combine(Path.GetFullPath("."), "Data", "BookSomeSpace", "Profiles"));
+                return new SettingsStorage(Path.Combine(Path.GetFullPath("."), "Data", "BookSomeSpace", "Profiles"), logger);
             });
             
             // Razor pages
