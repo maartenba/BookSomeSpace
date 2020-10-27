@@ -5,15 +5,25 @@ job("Run build") {
             memory = 2048
         }
 
-        mountDir = "/mnt/mySpace"
-        workDir = "/mnt/mySpace/work"
+        mountDir = "/mnt/space"
+        workDir = "/mnt/space/work"
         user = "root"
         
         shellScript {
-            content = """            
+            content = """
             	dotnet restore
-                dotnet build
+                dotnet build BookSomeSpace.sln -c Release
+                dotnet publish -c Release -r linux-x64 --self-contained true --output /mnt/space/share/app
             """
         }
+    }
+}
+
+job("Create container") {
+    docker {
+        build {
+            file = "./Dockerfile"
+        }
+        push("registry.jetbrains.team/p/evan/booksomespace")
     }
 }

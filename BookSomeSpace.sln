@@ -7,11 +7,17 @@ ProjectSection(SolutionItems) = preProject
 	global.json = global.json
 	NuGet.config = NuGet.config
 	.space.kts = .space.kts
+	Dockerfile = Dockerfile
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{9EFBEB1B-BE8D-404B-9791-67A5C8AAF421}"
 ProjectSection(SolutionItems) = preProject
 	README.md = README.md
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Run Configurations", "Run Configurations", "{85EDBA63-A3C2-46C1-A8D6-E24E994D27A3}"
+ProjectSection(SolutionItems) = preProject
+	.run\Run in Docker.run.xml = .run\Run in Docker.run.xml
 EndProjectSection
 EndProject
 Global
