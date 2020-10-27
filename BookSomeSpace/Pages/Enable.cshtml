@@ -27,7 +27,7 @@
         
                 <div class="shadow p-4">
                     You can use the following link to let people book entries in your agenda:<br/>
-                    <pre class="border p-2 mt-2">@Html.Raw(Model.BookUrl)</pre>
+                    <a href="@Html.Raw(Model.BookUrl)"><pre class="border p-2 mt-2">@Html.Raw(Model.BookUrl)</pre></a>
                 </div>
             }
             else
