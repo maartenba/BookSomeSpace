@@ -24,6 +24,6 @@ job("Create container") {
         build {
             file = "./Dockerfile"
         }
-        push("registry.jetbrains.team/p/evan/booksomespace")
+        push("registry.jetbrains.team/p/evan/booksomespace/webapp")
     }
 }
