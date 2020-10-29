@@ -45,6 +45,7 @@ namespace BookSomeSpace.Pages
         [BindProperty, Range(0, 23), DisplayName("Meetings can start at (UTC)")] public int MinHourUtc { get; set; }
         [BindProperty, Range(0, 23), DisplayName("Meetings should end at (UTC)")] public int MaxHourUtc { get; set; }
         [BindProperty, Range(0, 23), DisplayName("Hours to book beforehand")] public int MinScheduleNoticeInHours { get; set; }
+        [BindProperty, DisplayName("Send chat notification when meeting is booked")] public bool NotifyViaChat { get; set; }
         
         [TempData] public string? BookUrl { get; set; }
         
@@ -72,7 +73,8 @@ namespace BookSomeSpace.Pages
                     Username = profile.Username,
                     MinHourUtc = 7,
                     MaxHourUtc = 15,
-                    MinScheduleNoticeInHours = 1
+                    MinScheduleNoticeInHours = 1,
+                    NotifyViaChat = true
                 });
             }
 
@@ -81,6 +83,7 @@ namespace BookSomeSpace.Pages
             MinHourUtc = settings.MinHourUtc;
             MaxHourUtc = settings.MaxHourUtc;
             MinScheduleNoticeInHours = settings.MinScheduleNoticeInHours;
+            NotifyViaChat = settings.NotifyViaChat;
 
             return Page();
         }
@@ -105,6 +108,7 @@ namespace BookSomeSpace.Pages
                 settings.MinHourUtc = MinHourUtc;
                 settings.MaxHourUtc = MaxHourUtc;
                 settings.MinScheduleNoticeInHours = MinScheduleNoticeInHours;
+                settings.NotifyViaChat = NotifyViaChat;
                 
                 await _settingsStorage.Store(profile.Username, settings);
                 

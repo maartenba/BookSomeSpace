@@ -14,6 +14,7 @@ namespace BookSomeSpace
         public int MinHourUtc { get; set; } = 7;
         public int MaxHourUtc { get; set; } = 15;
         public int MinScheduleNoticeInHours { get; set; } = 1;
+        public bool NotifyViaChat { get; set; } = true;
     }
     
     public class SettingsStorage

@@ -59,6 +59,10 @@
                     <select asp-for="MinScheduleNoticeInHours" class="form-control" asp-items="Model.HoursOfDay"></select>
                     @Html.ValidationMessageFor(it => Model.MinScheduleNoticeInHours)
                 </div>
+                <div class="form-group">
+                    <input type="checkbox" asp-for="NotifyViaChat">
+                    <label asp-for="NotifyViaChat"></label>
+                </div>
                 <button type="submit" class="btn btn-primary">Update settings</button>
             </form>
         </div>

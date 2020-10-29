@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SpaceDotNet.Client;
 using SpaceDotNet.Client.CalendarEventSpecPartialBuilder;
@@ -23,20 +24,26 @@ namespace BookSomeSpace.Pages
         private readonly TeamDirectoryClient _teamDirectoryClient;
         private readonly AbsenceClient _absenceClient;
         private readonly CalendarClient _calendarClient;
+        private readonly ChatClient _chatClient;
         private readonly SettingsStorage _settingsStorage;
+        private string _meetingUrlTemplate;
         private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(
             TeamDirectoryClient teamDirectoryClient, 
             AbsenceClient absenceClient, 
             CalendarClient calendarClient,
+            ChatClient chatClient,
             SettingsStorage settingsStorage,
+            IConfiguration configuration,
             ILogger<IndexModel> logger)
         {
             _teamDirectoryClient = teamDirectoryClient;
             _absenceClient = absenceClient;
             _calendarClient = calendarClient;
+            _chatClient = chatClient;
             _settingsStorage = settingsStorage;
+            _meetingUrlTemplate = configuration["Space:ServerUrl"].TrimEnd('/') + "/meetings/{0}";
             _logger = logger;
         }
 
@@ -153,7 +160,7 @@ namespace BookSomeSpace.Pages
 
                 var whenAsUtc = When.ToUniversalTime();
                 
-                await _calendarClient.Meetings.CreateMeetingAsync(
+                var meeting = await _calendarClient.Meetings.CreateMeetingAsync(
                     summary: MeetingTitlePrefix + Name,
                     description: MeetingTitlePrefix + Name + "\n\n" + Summary,
                     occurrenceRule: new CalendarEventSpec
@@ -179,6 +186,14 @@ namespace BookSomeSpace.Pages
                     notifyOnExport: true,
                     organizer: profile.Id
                 );
+
+                if (profileSettings.NotifyViaChat)
+                {
+                    await _chatClient.Messages.SendMessageAsync(
+                        recipient: MessageRecipient.Member(ProfileIdentifier.Id(profile.Id)),
+                        content: ChatMessage.Text("📅 A new meeting was booked.\n\n" + string.Format(_meetingUrlTemplate, meeting.Id)),
+                        unfurlLinks: true);
+                }
                 
                 SuccessMessage = "Thank you, a meeting has been booked!";
                 
