@@ -9,8 +9,8 @@
     <script>
         $(function () {
             $('time[datetime]').each(function () {
-                var date = new Date(Date.parse($(this).attr('datetime')));
-                $(this).text(date.toLocaleTimeString(navigator.language));
+                var date = moment($(this).attr('datetime'));
+                $(this).text(date.format('hh:mm A z'));
             });
             
             $('#bookingModal').on('show.bs.modal', function (event) {
@@ -18,8 +18,8 @@
                 var when = button.data('when');   
                 var modal = $(this);
                 
-                var date = new Date(Date.parse(when));
-                modal.find('.modal-body #whenDisplay').text(date.toLocaleString(navigator.language));
+                var date = moment(when);
+                modal.find('.modal-body #whenDisplay').text(date.format('LLLL'));
                 modal.find('.modal-body #When').val(when);
             });
         });
@@ -110,7 +110,7 @@
                     <div class="form-group">
                         <label asp-for="When"></label>
                         <input type="hidden" asp-for="When" />
-                        <time id="whenDisplay" class="form-control" disabled></time>
+                        <time id="whenDisplay" class="form-control bg-light" disabled></time>
                     </div>
                     <div class="form-group">
                         <label asp-for="Name"></label>
