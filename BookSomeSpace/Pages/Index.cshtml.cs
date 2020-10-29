@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using SpaceDotNet.Client;
 using SpaceDotNet.Client.CalendarEventSpecPartialBuilder;
 using SpaceDotNet.Client.MeetingPartialBuilder;
+using SpaceDotNet.Client.TDMemberProfilePartialBuilder;
 using SpaceDotNet.Common;
 
 #nullable enable
@@ -67,7 +68,9 @@ namespace BookSomeSpace.Pages
             TDMemberProfile profile;
             try
             {
-                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Username(username));
+                profile = await _teamDirectoryClient.Profiles.GetProfileAsync(ProfileIdentifier.Username(username), _ => _
+                    .WithAllFieldsWildcard()
+                    .WithHolidays());
             }
             catch (NotFoundException)
             {
@@ -93,6 +96,9 @@ namespace BookSomeSpace.Pages
                 members: new List<string> { profile.Id }, since: startingAfter, till: endingBefore).ToListAsync();
             
             unavailabilities.AddRange(absences.Select(it => new Unavailability(it.Id, it.Since, it.Till)));
+
+            var holidays = profile.Holidays.Where(it => !it.IsWorkingDay);
+            unavailabilities.AddRange(holidays.Select(it => new Unavailability(it.Id, it.Date, it.Date.AddDays(1))));
             
             var meetings = await _calendarClient.Meetings.GetAllMeetingsAsyncEnumerable(profiles: new List<string> { profile.Id }, includePrivate: true, includeArchived: false, includeMeetingInstances: true, 
                 startingAfter: startingAfter,
