@@ -4,10 +4,6 @@ job("Run build") {
             cpu = 2048
             memory = 2048
         }
-
-        mountDir = "/mnt/space"
-        workDir = "/mnt/space/work"
-        user = "root"
         
         shellScript {
             content = """
