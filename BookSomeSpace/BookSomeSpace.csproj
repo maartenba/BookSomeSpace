@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SpaceDotNet.Client" Version="1.0.0-beta.*" />
-        <PackageReference Include="SpaceDotNet.AspNetCore" Version="1.0.0-beta.*" />
-        <PackageReference Include="SpaceDotNet.AspNetCore.Authentication.Space" Version="1.0.0-beta.*" />
+        <PackageReference Include="JetBrains.Space.Client" Version="1.0.0-beta.*" />
+        <PackageReference Include="JetBrains.Space.AspNetCore" Version="1.0.0-beta.*" />
+        <PackageReference Include="JetBrains.Space.AspNetCore.Authentication.Space" Version="1.0.0-beta.*" />
         <PackageReference Include="System.Linq.Async" Version="4.1.1" />
     </ItemGroup>
 </Project>

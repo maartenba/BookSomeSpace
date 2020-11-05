@@ -8,11 +8,11 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SpaceDotNet.Client;
-using SpaceDotNet.Client.CalendarEventSpecPartialBuilder;
-using SpaceDotNet.Client.MeetingPartialBuilder;
-using SpaceDotNet.Client.TDMemberProfilePartialBuilder;
-using SpaceDotNet.Common;
+using JetBrains.Space.Client;
+using JetBrains.Space.Client.CalendarEventSpecPartialBuilder;
+using JetBrains.Space.Client.MeetingPartialBuilder;
+using JetBrains.Space.Client.TDMemberProfilePartialBuilder;
+using JetBrains.Space.Common;
 
 #nullable enable
 
