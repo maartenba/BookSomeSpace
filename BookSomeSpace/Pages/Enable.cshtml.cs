@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using JetBrains.Space.AspNetCore.Authentication.Space;
+using JetBrains.Space.AspNetCore.Authentication;
 using JetBrains.Space.Client;
 using JetBrains.Space.Common;
 using JetBrains.Space.Common.Utilities;
