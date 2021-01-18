@@ -54,7 +54,13 @@ namespace BookSomeSpace
                     options.DefaultChallengeScheme = SpaceDefaults.AuthenticationScheme;
                 })
                 .AddCookie()
-                .AddSpace(options => Configuration.Bind("Space", options));
+                .AddSpace(options =>
+                {
+                    Configuration.Bind("Space", options);
+
+                    options.Scope.Clear();
+                    options.Scope.Add("Profile:ViewProfile");
+                });
             
             // Space client API
             services.AddSpaceConnection(provider =>
