@@ -92,14 +92,17 @@ namespace BookSomeSpace.Pages
 
             var unavailabilities = new List<Unavailability>();
 
+            // Absences
             var absences = await _absenceClient.GetAllAbsencesAsyncEnumerable(AbsenceListMode.All,
                 members: new List<string> { profile.Id }, since: startingAfter, till: endingBefore).ToListAsync();
             
             unavailabilities.AddRange(absences.Select(it => new Unavailability(it.Id, it.Since, it.Till)));
 
+            // Holidays
             var holidays = profile.Holidays.Where(it => !it.IsWorkingDay);
             unavailabilities.AddRange(holidays.Select(it => new Unavailability(it.Id, it.Date, it.Date.AddDays(1))));
             
+            // Meetings
             var meetings = await _calendarClient.Meetings.GetAllMeetingsAsyncEnumerable(profiles: new List<string> { profile.Id }, includePrivate: true, includeArchived: false, includeMeetingInstances: true, 
                 startingAfter: startingAfter,
                 endingBefore: endingBefore, partial: _ => _
@@ -117,11 +120,42 @@ namespace BookSomeSpace.Pages
 
             unavailabilities.AddRange(meetings.Select(it => new Unavailability(it.Id, it.OccurrenceRule.Start, it.OccurrenceRule.End)));
 
+            // Recurring meetings
             var recurringMeetings = meetings.Where(it => it.OccurrenceRule.RecurrenceRule != null).ToList();
             foreach (var recurringMeeting in recurringMeetings)
             {
                 var meetingOccurrences = await _calendarClient.Meetings.GetMeetingOccurrencesForPeriodAsync(recurringMeeting.Id, startingAfter, endingBefore);
                 unavailabilities.AddRange(meetingOccurrences.Select(it => new Unavailability(recurringMeeting.Id, it.Start, it.End)));
+            }
+            
+            // Working hours - don't book outside working hours
+            var workingDays = await _teamDirectoryClient.Profiles.WorkingDays
+                .QueryWorkingDaysForAProfileAsyncEnumerable(ProfileIdentifier.Id(profile.Id)).ToListAsync();
+            var workingHours = workingDays.FirstOrDefault(it =>
+                (it.DateStart <= startingAfter && it.DateEnd >= endingBefore) ||
+                (it.DateStart == null && it.DateEnd == null));            
+            if (workingHours?.WorkingDaysSpec.WorkingHours != null)
+            {
+                foreach (var day in startingAfter.EachDayUntil(endingBefore))
+                {
+                    var spaceDayOfWeek = day.DayOfWeek switch
+                    {
+                        DayOfWeek.Sunday => 0,
+                        DayOfWeek.Monday => 1,
+                        DayOfWeek.Tuesday => 2,
+                        DayOfWeek.Wednesday => 3,
+                        DayOfWeek.Thursday => 4,
+                        DayOfWeek.Friday => 5,
+                        DayOfWeek.Saturday => 6,
+                        _ => 0
+                    };
+                    var timeInterval = workingHours.WorkingDaysSpec.WorkingHours.FirstOrDefault(it => it.Day == spaceDayOfWeek);
+                    if (timeInterval != null)
+                    {
+                        unavailabilities.Add(new Unavailability("WH" + workingHours.Id, day.WithHour(0).WithMinute(0).WithSecond(0), day.WithHour(timeInterval.Interval.Since.Hours).WithMinute(timeInterval.Interval.Since.Minutes).WithSecond(0)));
+                        unavailabilities.Add(new Unavailability("WH" + workingHours.Id, day.WithHour(timeInterval.Interval.Till.Hours).WithMinute(timeInterval.Interval.Till.Minutes).WithSecond(0), day.WithHour(23).WithMinute(59).WithSecond(59)));
+                    }
+                }
             }
             
             var currentDateTime = startingAfter;
