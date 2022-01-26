@@ -1,18 +1,17 @@
 ﻿using System;
 
-namespace BookSomeSpace
+namespace BookSomeSpace;
+
+public class Unavailability
 {
-    public class Unavailability
+    public Unavailability(string id, DateTime start, DateTime end)
     {
-        public Unavailability(string id, DateTime start, DateTime end)
-        {
-            Id = id;
-            Start = start;
-            End = end;
-        }
-        
-        public string Id { get; set; }
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
+        Id = id;
+        Start = start;
+        End = end;
     }
+        
+    public string Id { get; set; }
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
 }

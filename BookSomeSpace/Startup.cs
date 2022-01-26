@@ -11,90 +11,89 @@ using Microsoft.Extensions.Logging;
 using JetBrains.Space.AspNetCore.Authentication;
 using JetBrains.Space.Common;
 
-namespace BookSomeSpace
+namespace BookSomeSpace;
+
+public class Startup
 {
-    public class Startup
+    public Startup(IConfiguration configuration)
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        Configuration = configuration;
+    }
 
-        public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // Local storage
+        services.AddSingleton(provider =>
         {
-            // Local storage
-            services.AddSingleton(provider =>
+            var logger = provider.GetRequiredService<ILogger<SettingsStorage>>();
+                
+            if (Environment.GetEnvironmentVariable("REGION_NAME") != null 
+                && Environment.GetEnvironmentVariable("HOME") != null)
             {
-                var logger = provider.GetService<ILogger<SettingsStorage>>();
+                // Azure
+                return new SettingsStorage(Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "Data", "BookSomeSpace", "Profiles"), logger);
+            }
                 
-                if (Environment.GetEnvironmentVariable("REGION_NAME") != null 
-                    && Environment.GetEnvironmentVariable("HOME") != null)
-                {
-                    // Azure
-                    return new SettingsStorage(Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "Data", "BookSomeSpace", "Profiles"), logger);
-                }
-                
-                // Local
-                return new SettingsStorage(Path.Combine(Path.GetFullPath("."), "Data", "BookSomeSpace", "Profiles"), logger);
+            // Local
+            return new SettingsStorage(Path.Combine(Path.GetFullPath("."), "Data", "BookSomeSpace", "Profiles"), logger);
+        });
+            
+        // Razor pages
+        services.AddRouting(options => options.LowercaseUrls = true);
+        services.AddHttpClient();
+        services.AddRazorPages();
+            
+        // Space authentication
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = SpaceDefaults.AuthenticationScheme;
+            })
+            .AddCookie()
+            .AddSpace(options =>
+            {
+                Configuration.Bind("Space", options);
+
+                options.Scope.Clear();
+                options.Scope.Add("Profile:ViewProfile");
             });
             
-            // Razor pages
-            services.AddRouting(options => options.LowercaseUrls = true);
-            services.AddHttpClient();
-            services.AddRazorPages();
-            
-            // Space authentication
-            services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = SpaceDefaults.AuthenticationScheme;
-                })
-                .AddCookie()
-                .AddSpace(options =>
-                {
-                    Configuration.Bind("Space", options);
+        // Space client API
+        services.AddSpaceConnection(provider =>
+            new ClientCredentialsConnection(
+                new Uri(Configuration["Space:ServerUrl"]),
+                Configuration["Space:ClientId"],
+                Configuration["Space:ClientSecret"],
+                provider.GetService<IHttpClientFactory>().CreateClient()));
+        services.AddSpaceClientApi();
+    }
 
-                    options.Scope.Clear();
-                    options.Scope.Add("Profile:ViewProfile");
-                });
-            
-            // Space client API
-            services.AddSpaceConnection(provider =>
-                new ClientCredentialsConnection(
-                    new Uri(Configuration["Space:ServerUrl"]),
-                    Configuration["Space:ClientId"],
-                    Configuration["Space:ClientSecret"],
-                    provider.GetService<IHttpClientFactory>().CreateClient()));
-            services.AddSpaceClientApi();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints => { endpoints.MapRazorPages(); });
+            app.UseDeveloperExceptionPage();
         }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints => { endpoints.MapRazorPages(); });
     }
 }
