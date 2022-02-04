@@ -165,7 +165,7 @@ public class IndexModel : PageModel
                 currentDateTime = new DateTime(currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, profileSettings.MinHourUtc, 0, 0);
                 
             Availability[currentDateTime] = 
-                !unavailabilities.Any(it => it.Start <= currentDateTime && it.End >= currentDateTime) &&
+                !unavailabilities.Any(it => it.Start <= currentDateTime && it.End > currentDateTime) &&
                 currentDateTime > DateTime.UtcNow.AddHours(profileSettings.MinScheduleNoticeInHours);
             currentDateTime = currentDateTime.AddMinutes(30);
 
